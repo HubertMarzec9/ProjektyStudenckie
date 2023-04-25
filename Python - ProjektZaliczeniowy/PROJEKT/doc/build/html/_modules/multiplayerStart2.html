@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>multiplayerStart2 &#8212; Hangman 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for multiplayerStart2</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+
+<span class="kn">from</span> <span class="nn">base</span> <span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">Base</span>
+<span class="kn">from</span> <span class="nn">DBgames</span> <span class="kn">import</span> <span class="n">Games</span>
+
+
+<div class="viewcode-block" id="search"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">nick</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that looks for an opponent</span>
+<span class="sd">    :param nick - nick</span>
+<span class="sd">    :return: 1 if opponent was found | 0 if opponent wasn&#39;t found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">nick</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">game_state</span> <span class="o">==</span> <span class="s2">&quot;Waiting_for_opponent&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">game_state</span> <span class="o">=</span> <span class="s2">&quot;Start&quot;</span>
+
+            <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;playerNick.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+            <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="game_state"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.game_state">[docs]</a><span class="k">def</span> <span class="nf">game_state</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that looks for host</span>
+<span class="sd">    :return: 1 if opponent was found | 0 if opponent wasn&#39;t found</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;playerNick.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">game_state</span> <span class="o">==</span> <span class="s2">&quot;Start&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">game_state</span> <span class="o">=</span> <span class="s2">&quot;Started&quot;</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="playerName1"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.playerName1">[docs]</a><span class="k">def</span> <span class="nf">playerName1</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that looks for name of Player1</span>
+<span class="sd">    :param id - id of game</span>
+<span class="sd">    :return: name of opponent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;playerNick.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span>
+        <span class="k">elif</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="playerName2"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.playerName2">[docs]</a><span class="k">def</span> <span class="nf">playerName2</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that looks for name of Player2</span>
+<span class="sd">    :param id - id of game</span>
+<span class="sd">    :return: name of opponent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;playerNick.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span>
+        <span class="k">elif</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">x</span></div>
+
+
+<div class="viewcode-block" id="sendLast"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.sendLast">[docs]</a><span class="k">def</span> <span class="nf">sendLast</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that send to database letter chosen</span>
+<span class="sd">    :param char - char</span>
+<span class="sd">    :param id - id of game</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;playerNick.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> sendLast P1: &quot;</span> <span class="o">+</span> <span class="n">char</span><span class="p">)</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">player1_last</span> <span class="o">=</span> <span class="n">char</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> sendLast P2: &quot;</span> <span class="o">+</span> <span class="n">char</span><span class="p">)</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">player2_last</span> <span class="o">=</span> <span class="n">char</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="readLast"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.readLast">[docs]</a><span class="k">def</span> <span class="nf">readLast</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that reads letter from the database</span>
+<span class="sd">    :param name - player name</span>
+<span class="sd">    :param id - id of game</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">player1</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player2_last</span>
+        <span class="k">elif</span> <span class="n">u</span><span class="o">.</span><span class="n">player2</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">char</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">player1_last</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">char</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="readWord"><a class="viewcode-back" href="../multiplayerStart2.html#multiplayerStart2.readWord">[docs]</a><span class="k">def</span> <span class="nf">readWord</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that reads letter from the database</span>
+<span class="sd">    :param id - id of game</span>
+<span class="sd">    :return word form database</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create_all</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">()</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">games</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Games</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Games</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">games</span><span class="p">:</span>
+        <span class="n">char</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">word</span>
+
+    <span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">char</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Hangman</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">projekt</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Hubert Marzec.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

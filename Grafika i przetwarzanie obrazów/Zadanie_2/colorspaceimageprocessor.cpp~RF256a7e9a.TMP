@@ -1,0 +1,110 @@
+/*Wzory Clab:
+  https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#cvtcolor
+  https://stackoverflow.com/questions/55903138/rgb-to-lab-conversion
+  https://github.com/topics/lab?l=c%2B%2B
+  https://stackoverflow.com/questions/7880264/convert-lab-color-to-rgb
+*/
+#include "colorspaceimageprocessor.h"
+
+void ColorspaceImageProcessor::process(const QImage &src, QImage &dst) {
+  const QRgb *src_data = reinterpret_cast<const QRgb*>(src.bits());
+  QRgb *dst_data = reinterpret_cast<QRgb*>(dst.bits());
+  int sizeInBytes = dst.sizeInBytes()/4;
+  QRgb tmp;
+  for(int i=0; i<sizeInBytes; i++){
+      //dst_data[i] = processOffset(src_data[i]);
+      tmp = src_data[i];
+      tmp = fromRGB(tmp);
+
+      tmp = processOffset(tmp);
+      tmp = toRGB(tmp);
+      dst_data[i] = tmp;
+    }
+}
+
+double ColorspaceImageProcessor::clabFunction(double a){
+  if (a > 0.008856)
+    return pow(a, (1 / 3));
+  else
+    return ((7.787 * a) + (16 / 116));
+}
+
+void ColorspaceImageProcessor::setOffset(int c0, int c1, int c2) {
+  offset[0] = c0;
+  offset[1] = c1;
+  offset[2] = c2;
+}
+
+QRgb ColorspaceImageProcessor::processOffset(QRgb val) {
+  //int r = std::clamp(qRed(val)+offset[0], 0, 255);
+  int r = (qRed(val)+offset[0])%256;
+  int g = std::clamp(qGreen(val)+offset[1], 0, 255);
+  int b = std::clamp(qBlue(val)+offset[2], 0, 255);
+  return qRgba(r,g,b,qAlpha(val));
+}
+
+void ColorspaceImageProcessor::setRgbMode(){
+  toRGB = fromRGB = [](QRgb val){return val;};
+}
+
+void ColorspaceImageProcessor::setHslMode(){
+  toRGB = hslToRgb;
+  fromRGB = rgbToHsl;
+}
+
+void ColorspaceImageProcessor::setClabMode(){
+  toRGB = clabToRgb;
+  fromRGB = rgbToClab;
+}
+
+QRgb ColorspaceImageProcessor::clabToRgb(QRgb val) {
+  int L, a, b;
+  L = qRed(val);
+  a = qGreen(val);
+  b = qBlue(val);
+  return QColor::fromHsl(L*359/255, a, b, qAlpha(val)).rgba();
+}
+
+QRgb ColorspaceImageProcessor::rgbToClab(QRgb val) {
+  double X, Y, Z, L, a, b;
+  double R, G, B;
+  R = qRed(val);
+  G = qGreen(val);
+  B = qBlue(val);
+
+  X = 0.412453 * R + 0.357580 * G + 0.180423 * B;
+  Y = 0.212671 * R + 0.715160 * G + 0.072169 * B;
+  Z = 0.019334 * R + 0.119193 * G + 0.950227 * B;
+
+  X = X / 95.0456;
+  Y = Y / 100.0;
+  Z = Z / 108.8754;
+
+  if (Y > 0.008856)
+    L = 116 * pow(Y, 1 / 3) - 16;
+  else L = 903.3*Y;
+
+  a = 500 * (clabFunction(X) - clabFunction(Y)) + 128;
+  b = 200 * (clabFunction(Y) - clabFunction(Z)) + 128;
+
+  return qRgba(L,a,b,qAlpha(val));
+}
+
+QRgb ColorspaceImageProcessor::rgbToHsl(QRgb val) {
+  int s, l;
+  float h;
+  h = QColor(val).hslHueF();
+  s = QColor(val).hslSaturation();
+  l = QColor(val).lightness();
+  return qRgba(h*255,s,l,qAlpha(val));
+}
+
+QRgb ColorspaceImageProcessor::hslToRgb(QRgb val) {
+  int h, s, l;
+  h = qRed(val);
+  s = qGreen(val);
+  l = qBlue(val);
+  return QColor::fromHsl(h*359/255, s, l, qAlpha(val)).rgba();
+}
+
+
